@@ -25,7 +25,8 @@ function readyNow() {
   });
 
   const FOAF = $rdf.Namespace('http://xmlns.com/foaf/0.1/');
-  $('#view').click(async function loadProfile() {
+
+  $('#view').click(async () => {
     // Set up a local data store and associated data fetcher
     const store = $rdf.graph();
     const fetcher = new $rdf.Fetcher(store);
@@ -37,5 +38,15 @@ function readyNow() {
     // Display their details
     const fullName = store.any($rdf.sym(person), FOAF('name'));
     $('#fullName').text(fullName && fullName.value);
+
+    // Display their friends
+    const friends = store.each($rdf.sym(person), FOAF('knows'));
+    $('#friends').empty();
+    friends.forEach(async (friend) => {
+      await fetcher.load(friend);
+      const fullName = store.any(friend, FOAF('name'));
+      $('#friends').append($('<li>')
+        .text(fullName && fullName.value || friend.value));
+    });
   });
 }
